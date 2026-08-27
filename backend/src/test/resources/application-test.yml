@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/devsleuth_test
+    username: devsleuth
+    password: changeme
+
+  flyway:
+    enabled: true
