@@ -1,6 +1,8 @@
 package com.devsleuth.review.service;
 
 import com.devsleuth.analysis.ai.AiAnalysisService;
+import com.devsleuth.analysis.ai.FixSuggestionService;
+import com.devsleuth.analysis.ai.PrSummaryService;
 import com.devsleuth.analysis.model.AnalysisInput;
 import com.devsleuth.analysis.model.RawFinding;
 import com.devsleuth.analysis.service.DiffExtractionService;
@@ -32,6 +34,8 @@ public class ReviewOrchestrator {
     private final DiffExtractionService diffExtractionService;
     private final StaticAnalysisEngine staticAnalysisEngine;
     private final AiAnalysisService aiAnalysisService;
+    private final PrSummaryService prSummaryService;
+    private final FixSuggestionService fixSuggestionService;
     private final HybridEngine hybridEngine;
     private final SeverityEngine severityEngine;
     private final FindingNormalizer findingNormalizer;
@@ -43,6 +47,8 @@ public class ReviewOrchestrator {
             DiffExtractionService diffExtractionService,
             StaticAnalysisEngine staticAnalysisEngine,
             AiAnalysisService aiAnalysisService,
+            PrSummaryService prSummaryService,
+            FixSuggestionService fixSuggestionService,
             HybridEngine hybridEngine,
             SeverityEngine severityEngine,
             FindingNormalizer findingNormalizer,
@@ -52,6 +58,8 @@ public class ReviewOrchestrator {
         this.diffExtractionService = diffExtractionService;
         this.staticAnalysisEngine = staticAnalysisEngine;
         this.aiAnalysisService = aiAnalysisService;
+        this.prSummaryService = prSummaryService;
+        this.fixSuggestionService = fixSuggestionService;
         this.hybridEngine = hybridEngine;
         this.severityEngine = severityEngine;
         this.findingNormalizer = findingNormalizer;
@@ -84,6 +92,17 @@ public class ReviewOrchestrator {
                 review.setFinalFindingCount(0);
                 updateStatus(review, ReviewStatus.COMPLETED);
                 return;
+            }
+
+            // SUMMARIZE (non-blocking — failure doesn't stop the pipeline)
+            try {
+                String summary = prSummaryService.summarize(input);
+                if (summary != null) {
+                    review.setSummary(summary);
+                    reviewRepository.save(review);
+                }
+            } catch (Exception e) {
+                log.warn("PR summary generation failed for review={}: {}", review.getId(), e.getMessage());
             }
 
             // STATIC_ANALYSIS
@@ -123,6 +142,13 @@ public class ReviewOrchestrator {
             timer.startStep("DATABASE");
             findingService.saveAll(finalFindings);
             timer.endCurrentStep();
+
+            // FIX SUGGESTIONS (non-blocking — failure doesn't stop the pipeline)
+            try {
+                fixSuggestionService.generateFixes(finalFindings, input);
+            } catch (Exception e) {
+                log.warn("Fix suggestion generation failed for review={}: {}", review.getId(), e.getMessage());
+            }
 
             review.setStaticFindingCount(staticFindings.size());
             review.setAiFindingCount(aiFindings.size());

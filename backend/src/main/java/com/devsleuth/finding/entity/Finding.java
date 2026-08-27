@@ -51,6 +51,13 @@ public class Finding extends BaseEntity {
     @Column(nullable = false)
     private String fingerprint;
 
+    @Column(name = "suggested_fix", columnDefinition = "TEXT")
+    private String suggestedFix;
+
+    /** User feedback: CONFIRMED, DISMISSED, or null (no feedback yet). */
+    @Column(name = "user_verdict")
+    private String userVerdict;
+
     public Review getReview() { return review; }
     public void setReview(Review review) { this.review = review; }
     public FindingSource getSource() { return source; }
@@ -75,4 +82,8 @@ public class Finding extends BaseEntity {
     public void setLineEnd(Integer lineEnd) { this.lineEnd = lineEnd; }
     public String getFingerprint() { return fingerprint; }
     public void setFingerprint(String fingerprint) { this.fingerprint = fingerprint; }
+    public String getSuggestedFix() { return suggestedFix; }
+    public void setSuggestedFix(String suggestedFix) { this.suggestedFix = suggestedFix; }
+    public String getUserVerdict() { return userVerdict; }
+    public void setUserVerdict(String userVerdict) { this.userVerdict = userVerdict; }
 }

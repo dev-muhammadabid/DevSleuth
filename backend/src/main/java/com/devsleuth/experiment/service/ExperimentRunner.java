@@ -80,7 +80,7 @@ public class ExperimentRunner {
         int fn = groundTruth.size() - matchedTruth.size();
 
         EvaluationMetrics metrics = EvaluationMetrics.compute(tp, fp, fn, elapsed);
-        log.info("Experiment [{}]: TP={}, FP={}, FN={}, P={:.3f}, R={:.3f}, F1={:.3f}, time={}ms",
+        log.info("Experiment [{}]: TP={}, FP={}, FN={}, P={}, R={}, F1={}, time={}ms",
                 mode, tp, fp, fn, metrics.precision(), metrics.recall(), metrics.f1(), elapsed);
 
         return metrics;

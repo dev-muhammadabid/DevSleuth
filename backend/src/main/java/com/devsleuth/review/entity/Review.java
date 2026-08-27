@@ -43,6 +43,9 @@ public class Review extends BaseEntity {
     @Column(name = "error_message")
     private String errorMessage;
 
+    @Column(name = "summary", columnDefinition = "TEXT")
+    private String summary;
+
     public PullRequest getPullRequest() { return pullRequest; }
     public void setPullRequest(PullRequest pullRequest) { this.pullRequest = pullRequest; }
     public String getCommitSha() { return commitSha; }
@@ -63,4 +66,6 @@ public class Review extends BaseEntity {
     public void setFinalFindingCount(Integer finalFindingCount) { this.finalFindingCount = finalFindingCount; }
     public String getErrorMessage() { return errorMessage; }
     public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
+    public String getSummary() { return summary; }
+    public void setSummary(String summary) { this.summary = summary; }
 }

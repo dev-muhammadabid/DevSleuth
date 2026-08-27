@@ -17,6 +17,7 @@ public record ReviewResponse(
         Integer aiFindingCount,
         Integer finalFindingCount,
         String errorMessage,
+        String summary,
         Instant createdAt
 ) {
     public static ReviewResponse from(Review r) {
@@ -32,6 +33,7 @@ public record ReviewResponse(
                 r.getAiFindingCount(),
                 r.getFinalFindingCount(),
                 r.getErrorMessage(),
+                r.getSummary(),
                 r.getCreatedAt()
         );
     }

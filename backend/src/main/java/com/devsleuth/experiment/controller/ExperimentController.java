@@ -1,9 +1,23 @@
 package com.devsleuth.experiment.controller;
 
+import com.devsleuth.auth.entity.User;
+import com.devsleuth.auth.service.AuthService;
+import com.devsleuth.common.exception.DevSleuthException;
+import com.devsleuth.experiment.ExperimentMode;
+import com.devsleuth.experiment.dto.ExperimentCreateRequest;
+import com.devsleuth.experiment.dto.ExperimentMetricResponse;
+import com.devsleuth.experiment.dto.ExperimentResponse;
+import com.devsleuth.experiment.dto.ExperimentRunRequest;
+import com.devsleuth.experiment.dto.ExperimentRunResponse;
+import com.devsleuth.experiment.entity.Experiment;
 import com.devsleuth.experiment.entity.ExperimentMetric;
 import com.devsleuth.experiment.entity.ExperimentRun;
 import com.devsleuth.experiment.repository.ExperimentMetricRepository;
-import com.devsleuth.experiment.repository.ExperimentRunRepository;
+import com.devsleuth.experiment.service.ExperimentRunService;
+import com.devsleuth.experiment.service.ExperimentService;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,29 +28,111 @@ import java.util.UUID;
 @RequestMapping("/api/experiments")
 public class ExperimentController {
 
-    private final ExperimentRunRepository runRepository;
+    private final ExperimentService experimentService;
+    private final ExperimentRunService experimentRunService;
     private final ExperimentMetricRepository metricRepository;
+    private final AuthService authService;
 
-    public ExperimentController(ExperimentRunRepository runRepository,
-                                ExperimentMetricRepository metricRepository) {
-        this.runRepository = runRepository;
+    public ExperimentController(ExperimentService experimentService,
+                                ExperimentRunService experimentRunService,
+                                ExperimentMetricRepository metricRepository,
+                                AuthService authService) {
+        this.experimentService = experimentService;
+        this.experimentRunService = experimentRunService;
         this.metricRepository = metricRepository;
+        this.authService = authService;
     }
 
-    @GetMapping("/{experimentId}/runs")
-    public ResponseEntity<List<ExperimentRun>> getRuns(@PathVariable UUID experimentId) {
-        return ResponseEntity.ok(runRepository.findByExperimentIdOrderByCreatedAtDesc(experimentId));
+    @PostMapping
+    public ResponseEntity<ExperimentResponse> create(@Valid @RequestBody ExperimentCreateRequest request,
+                                                      HttpSession session) {
+        User user = getUser(session);
+        if (user == null) return ResponseEntity.status(401).build();
+        Experiment experiment = experimentService.create(request, user);
+        return ResponseEntity.ok(ExperimentResponse.from(experiment));
     }
 
-    @GetMapping("/runs/{runId}/metrics")
-    public ResponseEntity<ExperimentMetric> getMetrics(@PathVariable UUID runId) {
-        return metricRepository.findByRunId(runId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping
+    public ResponseEntity<List<ExperimentResponse>> list(HttpSession session) {
+        User user = getUser(session);
+        if (user == null) return ResponseEntity.status(401).build();
+        List<ExperimentResponse> experiments = experimentService.listByUser(user.getId()).stream()
+                .map(ExperimentResponse::from)
+                .toList();
+        return ResponseEntity.ok(experiments);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ExperimentResponse> get(@PathVariable UUID id, HttpSession session) {
+        User user = getUser(session);
+        if (user == null) return ResponseEntity.status(401).build();
+        Experiment experiment = experimentService.findByIdAndUser(id, user.getId())
+                .orElseThrow(() -> new DevSleuthException("Experiment not found", HttpStatus.NOT_FOUND));
+        return ResponseEntity.ok(ExperimentResponse.from(experiment));
+    }
+
+    @PostMapping("/{id}/runs")
+    public ResponseEntity<ExperimentRunResponse> startRun(@PathVariable UUID id,
+                                                          @Valid @RequestBody ExperimentRunRequest request,
+                                                          HttpSession session) {
+        User user = getUser(session);
+        if (user == null) return ResponseEntity.status(401).build();
+        ExperimentMode mode = parseMode(request.mode());
+        ExperimentRun run = experimentRunService.startRun(id, mode, user);
+        return ResponseEntity.ok(ExperimentRunResponse.from(run));
+    }
+
+    @GetMapping("/{id}/runs")
+    public ResponseEntity<List<ExperimentRunResponse>> getRuns(@PathVariable UUID id, HttpSession session) {
+        User user = getUser(session);
+        if (user == null) return ResponseEntity.status(401).build();
+        List<ExperimentRunResponse> runs = experimentRunService.listRuns(id, user).stream()
+                .map(ExperimentRunResponse::from)
+                .toList();
+        return ResponseEntity.ok(runs);
+    }
+
+    @GetMapping("/runs/{runId}")
+    public ResponseEntity<ExperimentRunResponse> getRunStatus(@PathVariable UUID runId, HttpSession session) {
+        User user = getUser(session);
+        if (user == null) return ResponseEntity.status(401).build();
+
+        ExperimentRun run = experimentRunService.getRunStatus(runId)
+                .orElseThrow(() -> new DevSleuthException("Run not found", HttpStatus.NOT_FOUND));
+        // Ownership check: the run must belong to an experiment the user owns.
+        experimentService.findByIdAndUser(run.getExperimentId(), user.getId())
+                .orElseThrow(() -> new DevSleuthException("Run not found", HttpStatus.NOT_FOUND));
+
+        if ("COMPLETED".equals(run.getStatus())) {
+            ExperimentMetricResponse metrics = metricRepository.findByRunId(runId)
+                    .map(ExperimentMetricResponse::from)
+                    .orElse(null);
+            return ResponseEntity.ok(ExperimentRunResponse.from(run, metrics));
+        }
+        return ResponseEntity.ok(ExperimentRunResponse.from(run));
+    }
+
+    /**
+     * Kept for backward compatibility: returns all persisted metrics.
+     */
     @GetMapping("/results")
     public ResponseEntity<List<ExperimentMetric>> getAllMetrics() {
         return ResponseEntity.ok(metricRepository.findAll());
+    }
+
+    private ExperimentMode parseMode(String mode) {
+        try {
+            return ExperimentMode.valueOf(mode.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new DevSleuthException(
+                    "Invalid mode '" + mode + "'. Expected one of STATIC_ONLY, AI_ONLY, HYBRID.",
+                    HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    private User getUser(HttpSession session) {
+        UUID userId = (UUID) session.getAttribute("userId");
+        if (userId == null) return null;
+        return authService.findById(userId).orElse(null);
     }
 }

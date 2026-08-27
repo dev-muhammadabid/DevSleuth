@@ -16,6 +16,8 @@ public record FindingResponse(
         String title,
         String description,
         String recommendation,
+        String suggestedFix,
+        String userVerdict,
         String filePath,
         Integer lineStart,
         Integer lineEnd
@@ -24,7 +26,8 @@ public record FindingResponse(
         return new FindingResponse(
                 f.getId(), f.getSource(), f.getCategory(), f.getSeverity(),
                 f.getConfidence(), f.getTitle(), f.getDescription(),
-                f.getRecommendation(), f.getFilePath(), f.getLineStart(), f.getLineEnd()
+                f.getRecommendation(), f.getSuggestedFix(), f.getUserVerdict(),
+                f.getFilePath(), f.getLineStart(), f.getLineEnd()
         );
     }
 }

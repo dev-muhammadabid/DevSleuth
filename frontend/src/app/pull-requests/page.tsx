@@ -4,22 +4,28 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type { PullRequest, Repository } from "@/types";
 import { useApi } from "@/hooks/useApi";
+import { PullRequestRow } from "./PullRequestRow";
 
 export default function PullRequestsPage() {
   const { data: repos } = useApi<Repository[]>(() => api.repositories.list(), []);
   const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
   const [prs, setPrs] = useState<PullRequest[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const connectedRepos = repos?.filter((r) => r.connected) ?? [];
 
   useEffect(() => {
     if (!selectedRepo) return;
     setLoading(true);
+    setError(null);
     api.pullRequests
       .list(selectedRepo)
       .then(setPrs)
-      .catch(() => setPrs([]))
+      .catch((e: unknown) => {
+        setPrs([]);
+        setError(e instanceof Error ? e.message : "Failed to load pull requests.");
+      })
       .finally(() => setLoading(false));
   }, [selectedRepo]);
 
@@ -55,7 +61,13 @@ export default function PullRequestsPage() {
         </div>
       )}
 
-      {!loading && prs.length > 0 && (
+      {!loading && error && (
+        <div className="empty-state" style={{ color: "var(--danger, #e5484d)" }}>
+          {error}
+        </div>
+      )}
+
+      {!loading && !error && prs.length > 0 && (
         <div className="table-wrap">
           <table>
             <thead>
@@ -63,17 +75,16 @@ export default function PullRequestsPage() {
                 <th>#</th>
                 <th>Title</th>
                 <th>Author</th>
+                <th>Target</th>
                 <th>Status</th>
+                <th>Latest Review</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
               {prs.map((pr) => (
                 <tr key={pr.id}>
-                  <td className="muted">{pr.number}</td>
-                  <td>{pr.title}</td>
-                  <td className="muted">{pr.author}</td>
-                  <td><span className="badge badge-soft">{pr.status}</span></td>
+                  <PullRequestRow pr={pr} />
                   <td>
                     <AnalyzeButton repoId={selectedRepo!} prNumber={pr.number} />
                   </td>
@@ -84,7 +95,7 @@ export default function PullRequestsPage() {
         </div>
       )}
 
-      {!loading && selectedRepo && prs.length === 0 && (
+      {!loading && !error && selectedRepo && prs.length === 0 && (
         <div className="empty-state">No pull requests found for this repository.</div>
       )}
     </div>

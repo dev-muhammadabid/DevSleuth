@@ -30,4 +30,8 @@ public interface FindingRepository extends JpaRepository<Finding, UUID> {
     @Query("SELECT COUNT(f) FROM Finding f JOIN f.review rv JOIN rv.pullRequest pr JOIN pr.repository repo "
             + "JOIN repo.members m WHERE m.id = :userId AND f.severity IN ('CRITICAL','HIGH')")
     long countHighRiskForUser(@Param("userId") UUID userId);
+
+    @Query("SELECT f FROM Finding f JOIN f.review rv JOIN rv.pullRequest pr JOIN pr.repository repo "
+            + "JOIN repo.members m WHERE m.id = :userId AND f.userVerdict IS NOT NULL")
+    List<Finding> findWithVerdictForUser(@Param("userId") UUID userId);
 }

@@ -3,6 +3,7 @@ package com.devsleuth.pullrequest.service;
 import com.devsleuth.auth.entity.User;
 import com.devsleuth.common.enums.PullRequestStatus;
 import com.devsleuth.common.enums.ReviewStatus;
+import com.devsleuth.common.exception.DevSleuthException;
 import com.devsleuth.github.service.GitHubPullRequestService;
 import com.devsleuth.github.service.GitHubPullRequestService.GitHubPRInfo;
 import com.devsleuth.pullrequest.entity.PullRequest;
@@ -14,7 +15,10 @@ import com.devsleuth.review.repository.ReviewRepository;
 import com.devsleuth.review.service.ReviewOrchestrator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 import java.util.UUID;
@@ -43,10 +47,53 @@ public class PullRequestService {
     }
 
     /**
-     * List PRs for a repository.
+     * List PRs for a repository. Fetches open PRs from GitHub, upserts them locally,
+     * then returns the repository's PRs from the local DB (newest first).
+     * GitHub failures degrade gracefully into a 502 DevSleuthException.
      */
-    public List<PullRequest> listByRepository(UUID repositoryId) {
+    public List<PullRequest> listByRepository(UUID repositoryId, User user) {
+        Repository repo = repositoryService.findById(repositoryId)
+                .orElseThrow(() -> new DevSleuthException("Repository not found", HttpStatus.NOT_FOUND));
+
+        if (user.getAccessToken() == null || user.getAccessToken().isBlank()) {
+            throw new DevSleuthException("No GitHub access token. Please re-authenticate.",
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        List<GitHubPRInfo> ghPRs = fetchOpenPullRequests(repo, user.getAccessToken());
+        for (GitHubPRInfo info : ghPRs) {
+            upsertPullRequest(repo, info);
+        }
+
         return pullRequestRepository.findByRepositoryIdOrderByCreatedAtDesc(repositoryId);
+    }
+
+    /**
+     * Fetch open PRs from GitHub, translating client/network failures into a
+     * user-facing 502 so the list endpoint fails clearly instead of leaking a raw error.
+     */
+    private List<GitHubPRInfo> fetchOpenPullRequests(Repository repo, String accessToken) {
+        try {
+            return gitHubPullRequestService.listOpenPullRequests(
+                    repo.getOwner(), repo.getName(), accessToken);
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+                throw new DevSleuthException(
+                        "GitHub authentication failed. Reconnect your repository.",
+                        HttpStatus.BAD_GATEWAY);
+            }
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                throw new DevSleuthException("Repository not found on GitHub.",
+                        HttpStatus.BAD_GATEWAY);
+            }
+            log.warn("GitHub PR list failed for {}: {}", repo.getFullName(), e.getStatusCode());
+            throw new DevSleuthException("GitHub request failed. Try again later.",
+                    HttpStatus.BAD_GATEWAY);
+        } catch (RestClientException e) {
+            log.warn("GitHub unreachable while listing PRs for {}", repo.getFullName(), e);
+            throw new DevSleuthException("GitHub is unreachable. Try again later.",
+                    HttpStatus.BAD_GATEWAY);
+        }
     }
 
     /**
@@ -66,21 +113,7 @@ public class PullRequestService {
                 repo.getOwner(), repo.getName(), prNumber, user.getAccessToken());
 
         // Upsert PR in DB
-        PullRequest pr = pullRequestRepository.findByRepositoryIdAndNumber(repositoryId, prNumber)
-                .orElseGet(() -> {
-                    PullRequest p = new PullRequest();
-                    p.setRepository(repo);
-                    p.setNumber(prNumber);
-                    return p;
-                });
-        pr.setGithubPrId(info.githubPrId());
-        pr.setTitle(info.title());
-        pr.setAuthor(info.author());
-        pr.setSourceBranch(info.sourceBranch());
-        pr.setTargetBranch(info.targetBranch());
-        pr.setCommitSha(info.commitSha());
-        pr.setStatus(PullRequestStatus.OPEN);
-        pullRequestRepository.save(pr);
+        PullRequest pr = upsertPullRequest(repo, info);
 
         // Create review and kick off analysis
         Review review = new Review();
@@ -104,6 +137,22 @@ public class PullRequestService {
             return;
         }
 
+        PullRequest pr = upsertPullRequest(repo, info);
+
+        Review review = new Review();
+        review.setPullRequest(pr);
+        review.setCommitSha(info.commitSha());
+        review.setStatus(ReviewStatus.QUEUED);
+        reviewRepository.save(review);
+
+        reviewOrchestrator.runReview(review);
+    }
+
+    /**
+     * Insert or update a PullRequest for the given repository from GitHub PR info,
+     * matching on the PR number. Returns the persisted entity.
+     */
+    private PullRequest upsertPullRequest(Repository repo, GitHubPRInfo info) {
         PullRequest pr = pullRequestRepository.findByRepositoryIdAndNumber(repo.getId(), info.number())
                 .orElseGet(() -> {
                     PullRequest p = new PullRequest();
@@ -118,14 +167,6 @@ public class PullRequestService {
         pr.setTargetBranch(info.targetBranch());
         pr.setCommitSha(info.commitSha());
         pr.setStatus(PullRequestStatus.OPEN);
-        pullRequestRepository.save(pr);
-
-        Review review = new Review();
-        review.setPullRequest(pr);
-        review.setCommitSha(info.commitSha());
-        review.setStatus(ReviewStatus.QUEUED);
-        reviewRepository.save(review);
-
-        reviewOrchestrator.runReview(review);
+        return pullRequestRepository.save(pr);
     }
 }

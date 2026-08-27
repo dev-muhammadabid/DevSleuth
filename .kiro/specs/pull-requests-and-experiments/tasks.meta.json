@@ -1,0 +1,609 @@
+{
+  "pbtResults": {
+    "2.5 Write property test: PR upsert preserves all fields (Property 1)": {
+      "status": "passed",
+      "lastRunTimestamp": 1787849995971
+    },
+    "4.5 Write property test: Experiment ownership scoping (Property 6)": {
+      "status": "passed",
+      "lastRunTimestamp": 1787850353087
+    },
+    "9.4 Write property test: Results comparison rendering completeness (Property 8)": {
+      "status": "passed",
+      "lastRunTimestamp": 1787852097319
+    },
+    "8.3 Write property test: PR row rendering completeness (Property 2)": {
+      "status": "passed",
+      "lastRunTimestamp": 1787852257021
+    },
+    "10.3 Write property test: Reviews ordered by recency (Property 3)": {
+      "status": "passed",
+      "lastRunTimestamp": 1787852528691
+    }
+  },
+  "executionHistory": {
+    "1.1 Create Flyway migration V8 to alter experiments and experiment_runs tables": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846346254
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846359924
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846468457
+      }
+    ],
+    "1.2 Update `Experiment` entity to include userId, dataset (JSONB), and groundTruth (JSONB)": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846346956
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846474286
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846637083
+      }
+    ],
+    "1.3 Update `ExperimentRun` entity to include status and errorMessage fields": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347085
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846475361
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846638021
+      }
+    ],
+    "2.1 Extract `upsertPullRequest` into a reusable private method in `PullRequestService`": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347154
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846643662
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787849206202
+      }
+    ],
+    "2.2 Modify `PullRequestService.listByRepository` to fetch from GitHub and upsert": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347193
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787849213754
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787849740654
+      }
+    ],
+    "2.3 Add `PullRequestResponse` DTO with `LatestReviewInfo`": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347249
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787849215161
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787849738421
+      }
+    ],
+    "2.4 Update `PullRequestController.list` to pass User and return enriched DTOs": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347365
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787849745864
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850380783
+      }
+    ],
+    "2.5 Write property test: PR upsert preserves all fields (Property 1)": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347416
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787849747250
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850382168
+      }
+    ],
+    "3. Checkpoint - Verify PR list flow compiles and tests pass": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347460
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850594404
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850772029
+      }
+    ],
+    "4.1 Create request/response DTOs for experiments": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347506
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846644834
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787849207133
+      }
+    ],
+    "4.2 Create `ExperimentService` with create, listByUser, findByIdAndUser": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347569
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787849216192
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787849739362
+      }
+    ],
+    "4.3 Create `ExperimentRunService` with startRun, getRunStatus, listRuns": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347623
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787849748215
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850383567
+      }
+    ],
+    "4.4 Write property test: Invalid experiment input rejected (Property 5)": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347660
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787849749604
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850384526
+      }
+    ],
+    "4.5 Write property test: Experiment ownership scoping (Property 6)": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347689
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787849750554
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850385652
+      }
+    ],
+    "5.1 Extend `ExperimentController` with CRUD and run endpoints": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347723
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850420065
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850586207
+      }
+    ],
+    "5.2 Fix `ExperimentRunner` SLF4J placeholder bug": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347762
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846645627
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787849208143
+      }
+    ],
+    "5.3 Write property test: Metrics computation correctness (Property 7)": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347805
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850420952
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850586994
+      }
+    ],
+    "6. Checkpoint - Backend compiles and all tests pass": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347840
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850596128
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850773078
+      }
+    ],
+    "7.1 Add TypeScript types for Experiment, ExperimentRun, ExperimentMetrics": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347874
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850781445
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850923901
+      }
+    ],
+    "7.2 Add experiment API client methods to `frontend/src/lib/api.ts`": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347910
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850782568
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850925107
+      }
+    ],
+    "8.1 Update PR table to show targetBranch and latestReview columns": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347948
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850934548
+      },
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787851350522
+      }
+    ],
+    "8.2 Fix error handling on Pull Requests page": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846347979
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850935500
+      },
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787851351505
+      }
+    ],
+    "8.3 Write property test: PR row rendering completeness (Property 2)": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846348049
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850936898
+      },
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787852276494
+      }
+    ],
+    "9.1 Implement experiment list view and create form": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846348082
+      },
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850937824
+      },
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787852277388
+      }
+    ],
+    "9.2 Implement experiment detail view with run controls": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846348115
+      },
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787851373771
+      },
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787852278354
+      }
+    ],
+    "9.3 Implement status polling and results comparison view": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846348152
+      },
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787851374540
+      },
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787852279329
+      }
+    ],
+    "9.4 Write property test: Results comparison rendering completeness (Property 8)": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846348187
+      },
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787851375454
+      },
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787852280351
+      }
+    ],
+    "10.1 Write integration tests for PR list and analyze endpoints": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846348220
+      },
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787852286960
+      },
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787852653699
+      }
+    ],
+    "10.2 Write integration tests for experiment CRUD and run lifecycle": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846348257
+      },
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787852287704
+      },
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787852654526
+      }
+    ],
+    "10.3 Write property test: Reviews ordered by recency (Property 3)": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846348301
+      },
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787852288480
+      },
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787852655730
+      }
+    ],
+    "11. Final checkpoint - All tests pass, feature complete": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846348338
+      },
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787852662128
+      },
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787852860147
+      }
+    ],
+    "1. Database migrations and entity updates": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787846638077
+      }
+    ],
+    "2. Backend Pull Request service fix and DTOs": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850382235
+      }
+    ],
+    "4. Backend Experiment service layer": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850385689
+      }
+    ],
+    "5. Backend Experiment controller and bug fixes": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850587073
+      }
+    ],
+    "7. Frontend types and API client": [
+      {
+        "executionId": "4a07d5ca-6d11-4edd-b214-608010f00eb8",
+        "chatSessionId": "sess_92dad3e4-76a1-478e-9f1a-4518665d922e",
+        "timestamp": 1787850925150
+      }
+    ],
+    "8. Frontend Pull Requests page updates": [
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787852276521
+      }
+    ],
+    "9. Frontend Experiments page rewrite": [
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787852280386
+      }
+    ],
+    "10. Integration tests": [
+      {
+        "executionId": "69f101df-d245-4ab4-bdfa-c78cc3a3ed12",
+        "chatSessionId": "sess_c255bc1e-5746-4227-bc91-6ce649fe25ba",
+        "timestamp": 1787852655785
+      }
+    ]
+  }
+}

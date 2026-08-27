@@ -1,6 +1,12 @@
 import type {
+  CalibrationStats,
   DashboardSummary,
+  Experiment,
+  ExperimentCreateRequest,
+  ExperimentMetrics,
+  ExperimentRun,
   Finding,
+  MultiModelResponse,
   PullRequest,
   Repository,
   Review,
@@ -52,8 +58,24 @@ export const api = {
     findings: (id: string) => get<Finding[]>(`/reviews/${id}/findings`),
     compare: (baseId: string, compareId: string) =>
       get<ReviewComparison>(`/reviews/${baseId}/compare/${compareId}`),
+    multiModel: (id: string) => post<MultiModelResponse>(`/reviews/${id}/multi-model`),
   },
   findings: {
     get: (id: string) => get<Finding>(`/findings/${id}`),
+    chat: (id: string, question: string) =>
+      post<{ answer: string }>(`/findings/${id}/chat`, { question }),
+    verdict: (id: string, verdict: "CONFIRMED" | "DISMISSED") =>
+      post<void>(`/findings/${id}/verdict`, { verdict }),
+    calibration: () => get<CalibrationStats>(`/findings/calibration`),
+  },
+  experiments: {
+    list: () => get<Experiment[]>("/experiments"),
+    get: (id: string) => get<Experiment>(`/experiments/${id}`),
+    create: (body: ExperimentCreateRequest) => post<Experiment>("/experiments", body),
+    startRun: (id: string, mode: string) =>
+      post<ExperimentRun>(`/experiments/${id}/runs`, { mode }),
+    getRuns: (id: string) => get<ExperimentRun[]>(`/experiments/${id}/runs`),
+    getRunStatus: (runId: string) => get<ExperimentRun>(`/experiments/runs/${runId}`),
+    getResults: () => get<ExperimentMetrics[]>("/experiments/results"),
   },
 };

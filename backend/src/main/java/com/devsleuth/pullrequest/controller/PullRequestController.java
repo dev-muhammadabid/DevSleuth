@@ -7,6 +7,7 @@ import com.devsleuth.pullrequest.dto.PullRequestResponse;
 import com.devsleuth.pullrequest.entity.PullRequest;
 import com.devsleuth.pullrequest.service.PullRequestService;
 import com.devsleuth.review.entity.Review;
+import com.devsleuth.review.repository.ReviewRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,12 +23,14 @@ public class PullRequestController {
     private final PullRequestService pullRequestService;
     private final AuthService authService;
     private final AccessGuard accessGuard;
+    private final ReviewRepository reviewRepository;
 
     public PullRequestController(PullRequestService pullRequestService, AuthService authService,
-                                 AccessGuard accessGuard) {
+                                 AccessGuard accessGuard, ReviewRepository reviewRepository) {
         this.pullRequestService = pullRequestService;
         this.authService = authService;
         this.accessGuard = accessGuard;
+        this.reviewRepository = reviewRepository;
     }
 
     @GetMapping
@@ -36,8 +39,8 @@ public class PullRequestController {
         if (user == null) return ResponseEntity.status(401).build();
         accessGuard.requireRepository(repoId, user.getId());
 
-        List<PullRequest> prs = pullRequestService.listByRepository(repoId);
-        return ResponseEntity.ok(prs.stream().map(PullRequestResponse::from).toList());
+        List<PullRequest> prs = pullRequestService.listByRepository(repoId, user);
+        return ResponseEntity.ok(prs.stream().map(this::toResponse).toList());
     }
 
     /**
@@ -66,6 +69,14 @@ public class PullRequestController {
                 "reviewId", review.getId(),
                 "status", review.getStatus().name()
         ));
+    }
+
+    private PullRequestResponse toResponse(PullRequest pr) {
+        PullRequestResponse.LatestReviewInfo latestReview = reviewRepository
+                .findFirstByPullRequestIdOrderByCreatedAtDesc(pr.getId())
+                .map(PullRequestResponse.LatestReviewInfo::from)
+                .orElse(null);
+        return PullRequestResponse.from(pr, latestReview);
     }
 
     private User getUser(HttpSession session) {

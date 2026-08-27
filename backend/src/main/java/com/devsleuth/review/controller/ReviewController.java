@@ -1,9 +1,15 @@
 package com.devsleuth.review.controller;
 
+import com.devsleuth.analysis.ai.MultiModelService;
+import com.devsleuth.analysis.model.AnalysisInput;
+import com.devsleuth.analysis.service.DiffExtractionService;
+import com.devsleuth.auth.entity.User;
+import com.devsleuth.auth.repository.UserRepository;
 import com.devsleuth.common.security.AccessGuard;
 import com.devsleuth.finding.dto.FindingResponse;
 import com.devsleuth.finding.entity.Finding;
 import com.devsleuth.finding.service.FindingService;
+import com.devsleuth.review.dto.MultiModelResponse;
 import com.devsleuth.review.dto.ReviewComparisonResponse;
 import com.devsleuth.review.dto.ReviewResponse;
 import com.devsleuth.review.entity.Review;
@@ -21,13 +27,22 @@ public class ReviewController {
 
     private final FindingService findingService;
     private final ReviewComparisonService comparisonService;
+    private final MultiModelService multiModelService;
+    private final DiffExtractionService diffExtractionService;
+    private final UserRepository userRepository;
     private final AccessGuard accessGuard;
 
     public ReviewController(FindingService findingService,
                             ReviewComparisonService comparisonService,
+                            MultiModelService multiModelService,
+                            DiffExtractionService diffExtractionService,
+                            UserRepository userRepository,
                             AccessGuard accessGuard) {
         this.findingService = findingService;
         this.comparisonService = comparisonService;
+        this.multiModelService = multiModelService;
+        this.diffExtractionService = diffExtractionService;
+        this.userRepository = userRepository;
         this.accessGuard = accessGuard;
     }
 
@@ -57,6 +72,24 @@ public class ReviewController {
         accessGuard.requireReview(baseId, uid);
         accessGuard.requireReview(compareId, uid);
         return ResponseEntity.ok(comparisonService.compare(baseId, compareId));
+    }
+
+    /**
+     * Run the same PR diff through both OpenAI and Anthropic for side-by-side comparison.
+     */
+    @PostMapping("/{id}/multi-model")
+    public ResponseEntity<MultiModelResponse> multiModelCompare(@PathVariable UUID id, HttpSession session) {
+        UUID uid = userId(session);
+        Review review = accessGuard.requireReview(id, uid);
+
+        // Resolve an access token to fetch the diff
+        String accessToken = userRepository.findById(uid)
+                .map(User::getAccessToken)
+                .orElseThrow(() -> new RuntimeException("No access token"));
+
+        AnalysisInput input = diffExtractionService.extract(review, accessToken);
+        MultiModelService.ComparisonResult result = multiModelService.compare(input);
+        return ResponseEntity.ok(MultiModelResponse.from(result));
     }
 
     private UUID userId(HttpSession session) {

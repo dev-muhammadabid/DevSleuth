@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { useAuth } from "@/components/AuthProvider";
 
 const NAV = [
-  { href: "/", label: "Dashboard" },
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/repositories", label: "Repositories" },
   { href: "/pull-requests", label: "Pull Requests" },
   { href: "/experiments", label: "Experiments" },
@@ -18,7 +18,8 @@ export function Layout({ children }: { children: ReactNode }) {
       <header className="topbar">
         <div className="row" style={{ gap: "1.75rem" }}>
           <a href="/" className="brand">
-            <span className="brand-dot" aria-hidden />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/devsleuth.png" alt="" width={24} height={24} className="brand-logo" />
             DevSleuth
           </a>
           {user && (
