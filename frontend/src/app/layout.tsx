@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import "@/styles/globals.css";
+import { Layout } from "@/components/Layout";
+import { AuthProvider } from "@/components/AuthProvider";
 
 export const metadata: Metadata = {
   title: "DevSleuth",
@@ -12,7 +15,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AuthProvider>
+          <Layout>{children}</Layout>
+        </AuthProvider>
+      </body>
     </html>
   );
 }

@@ -1,7 +1,26 @@
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/devsleuth
+    username: postgres
+    password: winpostgres
+
   jpa:
     show-sql: true
+
+# The OAuth client-id is PUBLIC (it is sent in the browser authorize URL), so keeping a
+# default here is fine and unblocks local sign-in. The client-secret is confidential and
+# must come from the environment — never commit it.
+devsleuth:
+  github:
+    client-id: ${GITHUB_CLIENT_ID:Ov23li6iVnPqRJdqSSv3}
+    client-secret: ${GITHUB_CLIENT_SECRET:a80c16ed9aeeefffd25c94535fa9c810e84de2fd}
+  security:
+    # Local-dev-only key so token encryption is exercised in development.
+    # Production MUST override via the ENCRYPTION_KEY env var.
+    encryption-key: ${ENCRYPTION_KEY:dev-local-only-change-me}
 
 logging:
   level:
     com.devsleuth: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"

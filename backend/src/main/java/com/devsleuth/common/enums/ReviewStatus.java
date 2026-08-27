@@ -1,8 +1,12 @@
 package com.devsleuth.common.enums;
 
 public enum ReviewStatus {
-    PENDING,
-    IN_PROGRESS,
+    QUEUED,
+    FETCHING,
+    STATIC_ANALYSIS,
+    AI_ANALYSIS,
+    NORMALIZING,
+    DEDUPLICATING,
     COMPLETED,
     FAILED
 }

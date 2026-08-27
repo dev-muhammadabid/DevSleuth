@@ -1,12 +1,17 @@
 package com.devsleuth.review.service;
 
+import com.devsleuth.analysis.ai.AiAnalysisService;
+import com.devsleuth.analysis.model.AnalysisInput;
+import com.devsleuth.analysis.model.RawFinding;
+import com.devsleuth.analysis.service.DiffExtractionService;
+import com.devsleuth.analysis.staticanalysis.StaticAnalysisEngine;
+import com.devsleuth.auth.entity.User;
+import com.devsleuth.auth.repository.UserRepository;
 import com.devsleuth.common.enums.ReviewStatus;
 import com.devsleuth.finding.entity.Finding;
 import com.devsleuth.finding.service.FindingService;
 import com.devsleuth.review.entity.Review;
 import com.devsleuth.review.repository.ReviewRepository;
-import com.devsleuth.analysis.staticanalysis.StaticAnalysisService;
-import com.devsleuth.analysis.ai.AiAnalysisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -16,7 +21,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 public class ReviewOrchestrator {
@@ -25,67 +29,145 @@ public class ReviewOrchestrator {
 
     private final ReviewRepository reviewRepository;
     private final FindingService findingService;
-    private final StaticAnalysisService staticAnalysisService;
+    private final DiffExtractionService diffExtractionService;
+    private final StaticAnalysisEngine staticAnalysisEngine;
     private final AiAnalysisService aiAnalysisService;
-    private final DeduplicationService deduplicationService;
+    private final HybridEngine hybridEngine;
+    private final SeverityEngine severityEngine;
+    private final FindingNormalizer findingNormalizer;
+    private final UserRepository userRepository;
 
     public ReviewOrchestrator(
             ReviewRepository reviewRepository,
             FindingService findingService,
-            StaticAnalysisService staticAnalysisService,
+            DiffExtractionService diffExtractionService,
+            StaticAnalysisEngine staticAnalysisEngine,
             AiAnalysisService aiAnalysisService,
-            DeduplicationService deduplicationService) {
+            HybridEngine hybridEngine,
+            SeverityEngine severityEngine,
+            FindingNormalizer findingNormalizer,
+            UserRepository userRepository) {
         this.reviewRepository = reviewRepository;
         this.findingService = findingService;
-        this.staticAnalysisService = staticAnalysisService;
+        this.diffExtractionService = diffExtractionService;
+        this.staticAnalysisEngine = staticAnalysisEngine;
         this.aiAnalysisService = aiAnalysisService;
-        this.deduplicationService = deduplicationService;
+        this.hybridEngine = hybridEngine;
+        this.severityEngine = severityEngine;
+        this.findingNormalizer = findingNormalizer;
+        this.userRepository = userRepository;
     }
 
-    /**
-     * Entry point from webhook. Parses the PR event payload and kicks off analysis.
-     * ponytail: payload parsing is naive JSON extraction for now; upgrade to a typed DTO when event complexity grows.
-     */
     @Async("analysisExecutor")
-    public void handlePullRequestEvent(String payload) {
-        // TODO: parse payload, resolve/create PR entity, then call runReview(review)
-        log.info("Received PR event, queuing analysis");
+    public void runReview(Review review) {
+        runReview(review, com.devsleuth.experiment.ExperimentMode.HYBRID);
     }
 
-    public void runReview(Review review) {
-        review.setStatus(ReviewStatus.IN_PROGRESS);
+    @Async("analysisExecutor")
+    public void runReview(Review review, com.devsleuth.experiment.ExperimentMode mode) {
         review.setStartedAt(Instant.now());
-        reviewRepository.save(review);
+        ReviewTimer timer = new ReviewTimer(review.getId());
 
         try {
-            // Run static + AI in parallel
-            CompletableFuture<List<Finding>> staticFuture = staticAnalysisService.analyze(review);
-            CompletableFuture<List<Finding>> aiFuture = aiAnalysisService.analyze(review);
+            // FETCHING
+            timer.startStep("FETCHING");
+            updateStatus(review, ReviewStatus.FETCHING);
+            String accessToken = resolveAccessToken(review);
+            AnalysisInput input = com.devsleuth.common.exception.RetryStrategy.execute(
+                    2, () -> diffExtractionService.extract(review, accessToken), "DiffExtraction");
+            timer.endCurrentStep();
 
-            List<Finding> staticFindings = staticFuture.join();
-            List<Finding> aiFindings = aiFuture.join();
+            if (input.files().isEmpty()) {
+                log.info("review={} event=NO_SUPPORTED_FILES", review.getId());
+                review.setStaticFindingCount(0);
+                review.setAiFindingCount(0);
+                review.setFinalFindingCount(0);
+                updateStatus(review, ReviewStatus.COMPLETED);
+                return;
+            }
 
-            // Merge and deduplicate
-            List<Finding> all = new ArrayList<>(staticFindings);
-            all.addAll(aiFindings);
-            List<Finding> deduplicated = deduplicationService.deduplicate(all);
+            // STATIC_ANALYSIS
+            List<RawFinding> staticFindings = List.of();
+            if (mode != com.devsleuth.experiment.ExperimentMode.AI_ONLY) {
+                timer.startStep("STATIC_ANALYSIS");
+                updateStatus(review, ReviewStatus.STATIC_ANALYSIS);
+                staticFindings = staticAnalysisEngine.runAll(input);
+                timer.endCurrentStep();
+            }
 
-            // Persist
-            findingService.saveAll(deduplicated);
+            // AI_ANALYSIS
+            List<RawFinding> aiFindings = List.of();
+            if (mode != com.devsleuth.experiment.ExperimentMode.STATIC_ONLY) {
+                timer.startStep("AI_ANALYSIS");
+                updateStatus(review, ReviewStatus.AI_ANALYSIS);
+                aiFindings = aiAnalysisService.analyze(input);
+                timer.endCurrentStep();
+            }
 
-            // Update review stats
+            // NORMALIZING
+            timer.startStep("NORMALIZING");
+            updateStatus(review, ReviewStatus.NORMALIZING);
+            List<RawFinding> allRaw = new ArrayList<>(staticFindings);
+            allRaw.addAll(aiFindings);
+            List<Finding> normalized = findingNormalizer.normalize(allRaw, review);
+            severityEngine.apply(normalized);
+            timer.endCurrentStep();
+
+            // DEDUPLICATING (+ correlate + rank via hybrid engine)
+            timer.startStep("DEDUPLICATING");
+            updateStatus(review, ReviewStatus.DEDUPLICATING);
+            List<Finding> finalFindings = hybridEngine.process(normalized);
+            timer.endCurrentStep();
+
+            // PERSIST
+            timer.startStep("DATABASE");
+            findingService.saveAll(finalFindings);
+            timer.endCurrentStep();
+
             review.setStaticFindingCount(staticFindings.size());
             review.setAiFindingCount(aiFindings.size());
-            review.setFinalFindingCount(deduplicated.size());
-            review.setStatus(ReviewStatus.COMPLETED);
+            review.setFinalFindingCount(finalFindings.size());
+            updateStatus(review, ReviewStatus.COMPLETED);
+
+        } catch (com.devsleuth.common.exception.ReviewException e) {
+            log.error("Review {} failed [{}]: {}", review.getId(), e.getErrorCode(), e.getMessage());
+            review.setErrorMessage(e.getErrorCode() + ": " + e.getMessage());
+            updateStatus(review, ReviewStatus.FAILED);
         } catch (Exception e) {
-            log.error("Review failed", e);
-            review.setStatus(ReviewStatus.FAILED);
+            log.error("Review {} failed", review.getId(), e);
             review.setErrorMessage(e.getMessage());
+            updateStatus(review, ReviewStatus.FAILED);
         } finally {
+            timer.endCurrentStep(); // in case we failed mid-step
+            timer.logSummary();
             review.setCompletedAt(Instant.now());
-            review.setDurationMs(Duration.between(review.getStartedAt(), review.getCompletedAt()).toMillis());
+            if (review.getStartedAt() != null) {
+                review.setDurationMs(Duration.between(review.getStartedAt(), review.getCompletedAt()).toMillis());
+            }
             reviewRepository.save(review);
         }
+    }
+
+    private void updateStatus(Review review, ReviewStatus status) {
+        review.setStatus(status);
+        reviewRepository.save(review);
+        log.info("Review {} → {}", review.getId(), status);
+    }
+
+    private String resolveAccessToken(Review review) {
+        // ponytail: use any member's token to fetch the diff. Upgrade to GitHub App
+        // installation tokens later. Queried (not walked off the detached entity) so it
+        // works from the @Async analysis thread.
+        List<String> memberTokens = reviewRepository.findMemberAccessTokens(
+                review.getId(), org.springframework.data.domain.PageRequest.of(0, 1));
+        if (!memberTokens.isEmpty()) {
+            return memberTokens.get(0);
+        }
+        // fallback: any user with a token
+        return userRepository.findAll().stream()
+                .filter(u -> u.getAccessToken() != null)
+                .map(User::getAccessToken)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No access token available for review"));
     }
 }

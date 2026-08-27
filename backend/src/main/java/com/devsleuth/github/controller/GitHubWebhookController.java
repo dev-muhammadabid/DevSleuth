@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/webhook")
+@RequestMapping("/api/webhooks")
 public class GitHubWebhookController {
 
     private final GitHubWebhookService webhookService;
@@ -14,9 +14,12 @@ public class GitHubWebhookController {
         this.webhookService = webhookService;
     }
 
+    /**
+     * GitHub posts here on PR events. We verify, parse, queue a job, and return 200 immediately.
+     */
     @PostMapping("/github")
     public ResponseEntity<Void> handleWebhook(
-            @RequestHeader("X-Hub-Signature-256") String signature,
+            @RequestHeader(value = "X-Hub-Signature-256", required = false) String signature,
             @RequestHeader("X-GitHub-Event") String event,
             @RequestBody String payload) {
 
