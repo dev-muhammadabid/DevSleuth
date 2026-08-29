@@ -13,7 +13,6 @@ import java.util.UUID;
 public interface ReviewRepository extends JpaRepository<Review, UUID> {
     List<Review> findByPullRequestIdOrderByCreatedAtDesc(UUID pullRequestId);
     Optional<Review> findFirstByPullRequestIdOrderByCreatedAtDesc(UUID pullRequestId);
-    List<Review> findTop10ByOrderByCreatedAtDesc();
 
     /** Membership-scoped lookup: returns the review only if the user can access its repo. */
     @Query("SELECT r FROM Review r JOIN r.pullRequest pr JOIN pr.repository repo JOIN repo.members m "

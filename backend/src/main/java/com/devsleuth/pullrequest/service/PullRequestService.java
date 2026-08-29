@@ -97,16 +97,12 @@ public class PullRequestService {
     }
 
     /**
-     * Manual trigger: user selects a PR to analyze.
+     * Manual trigger: user selects a PR to analyze in the given mode.
      */
-    public Review triggerAnalysis(UUID repositoryId, int prNumber, User user) {
-        return triggerAnalysis(repositoryId, prNumber, user, com.devsleuth.experiment.ExperimentMode.HYBRID);
-    }
-
     public Review triggerAnalysis(UUID repositoryId, int prNumber, User user,
                                   com.devsleuth.experiment.ExperimentMode mode) {
         Repository repo = repositoryService.findById(repositoryId)
-                .orElseThrow(() -> new RuntimeException("Repository not found"));
+                .orElseThrow(() -> new DevSleuthException("Repository not found", HttpStatus.NOT_FOUND));
 
         // Fetch PR info from GitHub
         GitHubPRInfo info = gitHubPullRequestService.getPullRequest(

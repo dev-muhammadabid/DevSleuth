@@ -131,4 +131,22 @@ public class ExperimentRunService {
                 .orElseThrow(() -> new DevSleuthException("Experiment not found", HttpStatus.NOT_FOUND));
         return runRepository.findByExperimentIdOrderByCreatedAtDesc(experimentId);
     }
+
+    /**
+     * All metrics for runs owned by the given user, scoped so one user never sees
+     * another's results. Three bounded queries (experiments -> runs -> metrics); no N+1.
+     */
+    public List<ExperimentMetric> listMetricsForUser(UUID userId) {
+        List<UUID> experimentIds = experimentService.listByUser(userId).stream()
+                .map(Experiment::getId)
+                .toList();
+        if (experimentIds.isEmpty()) return List.of();
+
+        List<UUID> runIds = runRepository.findByExperimentIdIn(experimentIds).stream()
+                .map(ExperimentRun::getId)
+                .toList();
+        if (runIds.isEmpty()) return List.of();
+
+        return metricRepository.findByRunIdIn(runIds);
+    }
 }

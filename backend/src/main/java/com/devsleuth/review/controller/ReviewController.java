@@ -5,6 +5,7 @@ import com.devsleuth.analysis.model.AnalysisInput;
 import com.devsleuth.analysis.service.DiffExtractionService;
 import com.devsleuth.auth.entity.User;
 import com.devsleuth.auth.repository.UserRepository;
+import com.devsleuth.common.exception.DevSleuthException;
 import com.devsleuth.common.security.AccessGuard;
 import com.devsleuth.finding.dto.FindingResponse;
 import com.devsleuth.finding.entity.Finding;
@@ -15,6 +16,7 @@ import com.devsleuth.review.dto.ReviewResponse;
 import com.devsleuth.review.entity.Review;
 import com.devsleuth.review.service.ReviewComparisonService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -85,7 +87,9 @@ public class ReviewController {
         // Resolve an access token to fetch the diff
         String accessToken = userRepository.findById(uid)
                 .map(User::getAccessToken)
-                .orElseThrow(() -> new RuntimeException("No access token"));
+                .filter(t -> !t.isBlank())
+                .orElseThrow(() -> new DevSleuthException(
+                        "No GitHub access token. Please re-authenticate.", HttpStatus.BAD_REQUEST));
 
         AnalysisInput input = diffExtractionService.extract(review, accessToken);
         MultiModelService.ComparisonResult result = multiModelService.compare(input);

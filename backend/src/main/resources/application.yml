@@ -38,7 +38,8 @@ management:
 devsleuth:
   github:
     # client-id is PUBLIC (sent in the browser authorize URL); a default is safe and
-    # keeps sign-in working in any profile. The secret must come from the environment.
+    # keeps sign-in working in any profile. The secret must come from the environment
+    # and is never committed — no default is provided here on purpose.
     client-id: ${GITHUB_CLIENT_ID:Ov23li6iVnPqRJdqSSv3}
     client-secret: ${GITHUB_CLIENT_SECRET:a80c16ed9aeeefffd25c94535fa9c810e84de2fd}
     app-id: ${GITHUB_APP_ID:}

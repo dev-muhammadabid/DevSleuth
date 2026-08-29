@@ -9,7 +9,7 @@ spring:
 
 # The OAuth client-id is PUBLIC (it is sent in the browser authorize URL), so keeping a
 # default here is fine and unblocks local sign-in. The client-secret is confidential and
-# must come from the environment — never commit it.
+# must come from the environment (.env) — never commit it, so it has no default.
 devsleuth:
   github:
     client-id: ${GITHUB_CLIENT_ID:Ov23li6iVnPqRJdqSSv3}

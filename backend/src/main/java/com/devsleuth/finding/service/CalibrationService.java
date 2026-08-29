@@ -1,10 +1,12 @@
 package com.devsleuth.finding.service;
 
+import com.devsleuth.common.exception.DevSleuthException;
 import com.devsleuth.finding.dto.CalibrationResponse;
 import com.devsleuth.finding.entity.Finding;
 import com.devsleuth.finding.repository.FindingRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,7 +33,7 @@ public class CalibrationService {
      */
     public void submitVerdict(UUID findingId, String verdict) {
         Finding finding = findingRepository.findById(findingId)
-                .orElseThrow(() -> new RuntimeException("Finding not found: " + findingId));
+                .orElseThrow(() -> new DevSleuthException("Finding not found", HttpStatus.NOT_FOUND));
         finding.setUserVerdict(verdict);
         findingRepository.save(finding);
         log.info("Verdict submitted for finding={}: {}", findingId, verdict);

@@ -273,13 +273,12 @@ Receives GitHub webhook events. Returns 200 immediately; processing is async.
 
 ### GET /api/experiments/results
 
-Returns all experiment metrics.
+Returns the authenticated user's experiment metrics (scoped to the caller; requires an active session).
 
 **Response 200:**
 ```json
 [
   {
-    "id": "uuid",
     "runId": "uuid",
     "truePositives": 7,
     "falsePositives": 2,

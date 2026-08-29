@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface ExperimentRunRepository extends JpaRepository<ExperimentRun, UUID> {
     List<ExperimentRun> findByExperimentIdOrderByCreatedAtDesc(UUID experimentId);
+    List<ExperimentRun> findByExperimentIdIn(List<UUID> experimentIds);
 }

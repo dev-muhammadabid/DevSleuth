@@ -1,6 +1,5 @@
 package com.devsleuth.finding.repository;
 
-import com.devsleuth.common.enums.Severity;
 import com.devsleuth.finding.entity.Finding;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,11 +11,7 @@ import java.util.UUID;
 
 public interface FindingRepository extends JpaRepository<Finding, UUID> {
     List<Finding> findByReviewId(UUID reviewId);
-    List<Finding> findByReviewIdAndSeverity(UUID reviewId, Severity severity);
     boolean existsByReviewIdAndFingerprint(UUID reviewId, String fingerprint);
-
-    @Query("SELECT COUNT(f) FROM Finding f WHERE f.severity IN ('CRITICAL','HIGH')")
-    long countHighRiskFindings();
 
     /** Membership-scoped lookup: returns the finding only if the user can access its repo. */
     @Query("SELECT f FROM Finding f JOIN f.review rv JOIN rv.pullRequest pr JOIN pr.repository repo "

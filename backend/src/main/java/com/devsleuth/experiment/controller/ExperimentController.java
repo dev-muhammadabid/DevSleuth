@@ -10,7 +10,6 @@ import com.devsleuth.experiment.dto.ExperimentResponse;
 import com.devsleuth.experiment.dto.ExperimentRunRequest;
 import com.devsleuth.experiment.dto.ExperimentRunResponse;
 import com.devsleuth.experiment.entity.Experiment;
-import com.devsleuth.experiment.entity.ExperimentMetric;
 import com.devsleuth.experiment.entity.ExperimentRun;
 import com.devsleuth.experiment.repository.ExperimentMetricRepository;
 import com.devsleuth.experiment.service.ExperimentRunService;
@@ -113,11 +112,17 @@ public class ExperimentController {
     }
 
     /**
-     * Kept for backward compatibility: returns all persisted metrics.
+     * Returns the authenticated user's experiment metrics. Scoped to the caller so one
+     * user never sees another's results; returns the DTO (not the raw entity).
      */
     @GetMapping("/results")
-    public ResponseEntity<List<ExperimentMetric>> getAllMetrics() {
-        return ResponseEntity.ok(metricRepository.findAll());
+    public ResponseEntity<List<ExperimentMetricResponse>> getResults(HttpSession session) {
+        User user = getUser(session);
+        if (user == null) return ResponseEntity.status(401).build();
+        List<ExperimentMetricResponse> results = experimentRunService.listMetricsForUser(user.getId()).stream()
+                .map(ExperimentMetricResponse::from)
+                .toList();
+        return ResponseEntity.ok(results);
     }
 
     private ExperimentMode parseMode(String mode) {

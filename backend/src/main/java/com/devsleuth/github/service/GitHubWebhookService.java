@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -27,17 +28,23 @@ public class GitHubWebhookService {
 
     private final GitHubProperties ghProps;
     private final PullRequestService pullRequestService;
+    // Self-reference so the @Async proxy applies: a self-invocation through 'this' would
+    // bypass the proxy and run the handler synchronously on the webhook request thread.
+    private final ObjectProvider<GitHubWebhookService> self;
 
-    public GitHubWebhookService(GitHubProperties ghProps, PullRequestService pullRequestService) {
+    public GitHubWebhookService(GitHubProperties ghProps, PullRequestService pullRequestService,
+                                ObjectProvider<GitHubWebhookService> self) {
         this.ghProps = ghProps;
         this.pullRequestService = pullRequestService;
+        this.self = self;
     }
 
     public void process(String event, String signature, String payload) {
         verifySignature(payload, signature);
 
         if ("pull_request".equals(event)) {
-            handlePullRequestEvent(payload);
+            // Through the proxy so @Async takes effect and the webhook returns 200 immediately.
+            self.getObject().handlePullRequestEvent(payload);
         } else {
             log.debug("Ignoring event: {}", event);
         }

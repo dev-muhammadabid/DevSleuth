@@ -44,7 +44,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await api.auth.logout();
     } finally {
       setUser(null);
-      window.location.href = "/login";
+      // Go to the public landing page, NOT /login: the login page immediately
+      // re-initiates GitHub OAuth, and since GitHub still has the app authorized it
+      // would silently sign the user back in — making logout appear to do nothing.
+      window.location.href = "/";
     }
   };
 
